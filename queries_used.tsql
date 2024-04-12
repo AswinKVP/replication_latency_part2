@@ -67,7 +67,7 @@ SELECT
     FROM sys.dm_exec_sessions s LEFT OUTER JOIN sys.dm_exec_connections c ON (s.session_id = c.session_id) 
 WHERE (select text from sys.dm_exec_sql_text(c.most_recent_sql_handle)) LIKE '%sp_MSget_repl_command%'
 
-CREATE EVENT SESSION [logreader_writer_track] ON SERVER 
+CREATE EVENT SESSION [distributor_writer_track] ON SERVER 
 ADD EVENT sqlos.wait_completed(
     ACTION(package0.callstack)
     WHERE ([sqlserver].[session_id]=(64))),  -- Change session id to dist agent session id
@@ -77,7 +77,7 @@ ADD EVENT sqlos.wait_info_external(
 ADD EVENT sqlserver.sp_statement_completed(
     ACTION(package0.event_sequence,sqlserver.plan_handle,sqlserver.session_id,sqlserver.transaction_id)
     WHERE ([sqlserver].[session_id]=(64)))  -- Change session id to dist agent session id
-ADD TARGET package0.event_file(SET filename=N'C:\Temp\logreader_writer_track',max_file_size=(256),max_rollover_files=(5))
+ADD TARGET package0.event_file(SET filename=N'C:\Temp\distributor_reader_track',max_file_size=(256),max_rollover_files=(5))
 WITH (MAX_MEMORY=8192 KB,EVENT_RETENTION_MODE=ALLOW_MULTIPLE_EVENT_LOSS,MAX_DISPATCH_LATENCY=30 SECONDS,MAX_EVENT_SIZE=0 KB,MEMORY_PARTITION_MODE=NONE,TRACK_CAUSALITY=ON,STARTUP_STATE=OFF)
 
 -- Step 4.4 related
