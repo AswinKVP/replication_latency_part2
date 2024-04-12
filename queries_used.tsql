@@ -8,17 +8,17 @@ SELECT
     FROM sys.dm_exec_sessions s
 WHERE s.program_name LIKE '%LogReader%'
 
-CREATE EVENT SESSION [logreader_writer_track] ON SERVER 
+CREATE EVENT SESSION [LogReaderMonitor] ON SERVER
 ADD EVENT sqlos.wait_completed(
-    ACTION(package0.callstack)
-    WHERE ([sqlserver].[session_id]=(64))),  -- Change session id to log reader writer session id
+   ACTION(package0.callstack)
+   WHERE ([sqlserver].[session_id]=(123))),
 ADD EVENT sqlos.wait_info_external(
-    ACTION(package0.callstack)
-    WHERE (([opcode]=('End')) AND ([sqlserver].[session_id]=(64)))), -- Change session id to log reader writer session id
-ADD EVENT sqlserver.sp_statement_completed(
-ACTION(package0.event_sequence,sqlserver.plan_handle,sqlserver.session_id,sqlserver.transaction_id)
-WHERE ([sqlserver].[session_id]=(64)))  -- Change session id to log reader writer session id
-ADD TARGET package0.event_file(SET filename=N'C:\Temp\logreader_writer_track',max_file_size=(256),max_rollover_files=(5))
+   ACTION(package0.callstack)
+   WHERE (([opcode]=('End')) AND ([sqlserver].[session_id]=(123)))),
+ADD EVENT sqlserver.rpc_completed(
+   ACTION(package0.callstack)
+   WHERE ([sqlserver].[session_id]=(123)))
+ADD TARGET package0.event_file(SET filename=N'C:\Temp\logreader_reader_track',max_file_size=(256),max_rollover_files=(5))
 WITH (MAX_MEMORY=8192 KB,EVENT_RETENTION_MODE=ALLOW_MULTIPLE_EVENT_LOSS,MAX_DISPATCH_LATENCY=30 SECONDS,MAX_EVENT_SIZE=0 KB,MEMORY_PARTITION_MODE=NONE,TRACK_CAUSALITY=ON,STARTUP_STATE=OFF)
 GO
 
